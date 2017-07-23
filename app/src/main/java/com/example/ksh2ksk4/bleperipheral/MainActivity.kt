@@ -64,8 +64,8 @@ class MainActivity : AppCompatActivity() {
                 !bluetoothAdapter.isMultipleAdvertisementSupported ||
                 !bluetoothAdapter.isOffloadedFilteringSupported ||
                 !bluetoothAdapter.isOffloadedScanBatchingSupported) {
-            Log.d(TAG, "This device does not support facility of peripheral")
-            Toast.makeText(this, "This device does not support facility of peripheral", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "This device does not support facility of peripheral.")
+            Toast.makeText(this, "This device does not support facility of peripheral.", Toast.LENGTH_SHORT).show()
 
             finishAndRemoveTask()
         }
