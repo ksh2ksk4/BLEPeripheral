@@ -10,6 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
@@ -18,11 +20,14 @@ class MainActivity : AppCompatActivity() {
         private val REQUEST_ENABLE_BLUETOOTH = 1
     }
 
+    lateinit private var textViewMessage: TextView
     lateinit private var bluetoothLeAdvertiser: BluetoothLeAdvertiser
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        textViewMessage = findViewById(R.id.textViewMessage) as TextView
 
         // デバイスがBLEをサポートしているかチェック
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -55,5 +60,32 @@ class MainActivity : AppCompatActivity() {
 
             finishAndRemoveTask()
         }
+    }
+
+    fun onStartButtonTapped(view: View) {
+        Log.d(TAG, "Start button tapped.")
+        textViewMessage.append("Start button tapped.\n")
+
+        startAdvertising()
+    }
+
+    fun onStopButtonTapped(view: View) {
+        Log.d(TAG, "Stop button tapped.")
+        textViewMessage.append("Stop button tapped.\n")
+
+        stopAdvertising()
+    }
+
+    /**
+     * Advertising
+     */
+    private fun startAdvertising() {
+        Log.d(TAG, "Advertising started.")
+        textViewMessage.append("Advertising started.\n")
+    }
+
+    private fun stopAdvertising() {
+        Log.d(TAG, "Advertising stopped.")
+        textViewMessage.append("Advertising stopped.\n")
     }
 }
