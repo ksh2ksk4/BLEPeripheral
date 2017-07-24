@@ -190,5 +190,6 @@ class MainActivity : AppCompatActivity() {
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallbackIBeacon)
 
         isAdvertising = false
+
     }
 }
