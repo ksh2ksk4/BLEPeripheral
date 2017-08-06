@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity() {
         private val REQUEST_ENABLE_BLUETOOTH = 1
         private val ADVERTISING_TIMEOUT = 12500
         private val IBEACON_UUID = "7694505b-707b-484c-82ce-6917eac8191e"
-        private val IBEACON_MAJOR = 831
-        private val IBEACON_MINOR = 5555
+        private val IBEACON_MAJOR = 8311
+        private val IBEACON_MINOR = 1
     }
 
     lateinit private var textViewMessage: TextView
