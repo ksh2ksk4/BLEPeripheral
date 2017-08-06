@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
                 .setConnectable(false)
                 .setTimeout(ADVERTISING_TIMEOUT)
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW)
+                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
                 .build()
     }
 
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
                 IBEACON_MINOR.ushr(8).toByte(),
                 IBEACON_MINOR.toByte(),
                 // measured power
-                (AdvertiseSettings.ADVERTISE_TX_POWER_HIGH - 41).toByte())
+                (AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM - 41).toByte())
         System.arraycopy(uuid, 0, manufacturerData, 2, 16)
 
         Log.d(TAG, "manufacturerData: " + manufacturerData.toString())
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                 // 0x004c: Apple
                 .addManufacturerData(0x004c, manufacturerData)
                 .setIncludeDeviceName(false)
-                .setIncludeTxPowerLevel(false)
+                .setIncludeTxPowerLevel(true)
                 .build()
     }
 
