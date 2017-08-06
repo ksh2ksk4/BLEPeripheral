@@ -8,12 +8,15 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import java.nio.ByteBuffer
@@ -30,6 +33,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     lateinit private var textViewMessage: TextView
+    private var editTextUuid: EditText? = null
+    private var editTextMajor: EditText? = null
+    private var editTextMinor: EditText? = null
+    private var pref: SharedPreferences? = null
+
     lateinit private var bluetoothLeAdvertiser: BluetoothLeAdvertiser
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +45,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         textViewMessage = findViewById(R.id.textViewMessage) as TextView
+        editTextUuid = findViewById(R.id.editTextUuid) as EditText
+        editTextMajor = findViewById(R.id.editTextMajor) as EditText
+        editTextMinor = findViewById(R.id.editTextMinor) as EditText
 
         // デバイスがBLEをサポートしているかチェック
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -69,6 +80,18 @@ class MainActivity : AppCompatActivity() {
 
             finishAndRemoveTask()
         }
+
+        // 共有プリファレンスからUUID/Major/Minorを取得
+        pref = PreferenceManager.getDefaultSharedPreferences(this)
+        var uuid = pref!!.getString("UUID", IBEACON_UUID)
+        var major = pref!!.getInt("MAJOR", IBEACON_MAJOR)
+        var minor = pref!!.getInt("MINOR", IBEACON_MINOR)
+
+        editTextUuid!!.setText(uuid)
+        editTextMajor!!.setText(major.toString())
+        editTextMinor!!.setText(minor.toString())
+
+        advertiseData = buildAdvertiseData(convertUUID(uuid), major, minor)
     }
 
     fun onStartButtonTapped(view: View) {
@@ -85,22 +108,28 @@ class MainActivity : AppCompatActivity() {
         stopAdvertising()
     }
 
+    fun onUpdateButtonTapped(view: View) {
+        Log.d(TAG, "Update button tapped.")
+        textViewMessage.append("Update button tapped.\n")
+
+        updateAdvertising()
+    }
+
     /**
      * Advertising
      */
     private val advertiseSettings = buildAdvertiseSettings()
-    private val advertiseData = buildAdvertiseData()
+    private var advertiseData: AdvertiseData? = null
     private val advertiseCallbackIBeacon = AdvertiseCallbackIBeacon()
 
-    private val uuid: ByteArray
-        get() {
-            val uuid = UUID.fromString(IBEACON_UUID)
-            val byteBuffer = ByteBuffer.wrap(ByteArray(16))
-            byteBuffer.putLong(uuid.mostSignificantBits)
-            byteBuffer.putLong(uuid.leastSignificantBits)
+    private fun convertUUID(uuidString: String): ByteArray {
+        val uuid = UUID.fromString(uuidString)
+        val byteBuffer = ByteBuffer.wrap(ByteArray(16))
+        byteBuffer.putLong(uuid.mostSignificantBits)
+        byteBuffer.putLong(uuid.leastSignificantBits)
 
-            return byteBuffer.array()
-        }
+        return byteBuffer.array()
+    }
 
     private var isAdvertising = false
 
@@ -113,22 +142,22 @@ class MainActivity : AppCompatActivity() {
                 .build()
     }
 
-    private fun buildAdvertiseData(): AdvertiseData {
+    private fun buildAdvertiseData(uuid: ByteArray, major: Int, minor: Int): AdvertiseData {
         val manufacturerData = byteArrayOf(
                 // 0x02: iBeacon
                 0x02,
                 // 0x15: 21Bytes
                 0x15,
-                // UUID(16Bytes)
+                // Proximity UUID(16Bytes)
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                // major
-                IBEACON_MAJOR.ushr(8).toByte(),
-                IBEACON_MAJOR.toByte(),
-                // minor
-                IBEACON_MINOR.ushr(8).toByte(),
-                IBEACON_MINOR.toByte(),
-                // measured power
+                // Major
+                major.ushr(8).toByte(),
+                major.toByte(),
+                // Minor
+                minor.ushr(8).toByte(),
+                minor.toByte(),
+                // Measured Power
                 (AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM - 41).toByte())
         System.arraycopy(uuid, 0, manufacturerData, 2, 16)
 
@@ -190,6 +219,25 @@ class MainActivity : AppCompatActivity() {
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallbackIBeacon)
 
         isAdvertising = false
+    }
 
+    private fun updateAdvertising() {
+        Log.d(TAG, "Advertising updated.")
+        textViewMessage.append("Advertising updated.\n")
+
+        val uuid = convertUUID(editTextUuid!!.text.toString())
+        val major = editTextMajor!!.text.toString().toInt()
+        val minor = editTextMinor!!.text.toString().toInt()
+
+        val editor = pref!!.edit()
+        //editor.clear()
+        //editor.putInt("MINOR", (Math.random() * 9999).toInt())
+        editor.putInt("MAJOR", major)
+        editor.putInt("MINOR", minor)
+        editor.commit()
+
+        stopAdvertising()
+        advertiseData = buildAdvertiseData(uuid, major, minor)
+        startAdvertising()
     }
 }
